@@ -1,5 +1,5 @@
 CC = clang++#g++
-CPPFLAGS += -std=c++11# -Werror -Wreturn-type -pedantic -pedantic-errors $
+CPPFLAGS += -std=c++11# -Werror -Wreturn-type -pedantic -pedantic-errors
 
 EXE := MyTraceroute
 
@@ -19,8 +19,14 @@ $(EXE):	$(OBJS)
 	$(CC) $(CPPFLAGS) $^ -o $@
 
 
-$(OBJS): $(SRCS) | $(OBJ_DIR) #all files are checking
+#$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
+#	$(CC) $(CPPFLAGS) -c $^ -o $@
+
+$(OBJ_DIR)/send.o: $(SRC_DIR)/send.cpp $(SRC_DIR)/send.h | $(OBJ_DIR)
+	$(CC) $(CPPFLAGS) -c $< -o $@
+$(OBJ_DIR)/myTraceroute.o: $(SRC_DIR)/myTraceroute.cpp $(OBJ_DIR)/send.o |$(OBJ_DIR)
 	$(CC) $(CPPFLAGS) -c $^ -o $@
+
 
 $(OBJ_DIR):
 	mkdir $(OBJ_DIR)
