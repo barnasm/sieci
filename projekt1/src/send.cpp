@@ -1,3 +1,5 @@
+//Michał Barnaś 280012
+
 #include "send.h"
 
 u_int16_t compute_icmp_checksum (const void *buff, int length){
@@ -14,12 +16,11 @@ u_int16_t compute_icmp_checksum (const void *buff, int length){
 
 
 //struct icmphdr icmp_header;
-void createHeaderToSend(const int *nth){
+void fillHeader(const int *nth){
   icmp_header.type = ICMP_ECHO;
   icmp_header.code = 0;
   icmp_header.un.echo.id = packageData.pid;
   icmp_header.un.echo.sequence = *nth;
-  icmp_header.checksum = 0;
   icmp_header.checksum =
     compute_icmp_checksum((u_int16_t*)&icmp_header, sizeof(icmp_header));
 }
@@ -41,15 +42,25 @@ void sendPacket(){
      (struct sockaddr*)&recipient, sizeof(recipient));
 }
 
-void makeSendPacket(int *pnr, const char *addrIp, int *ttl){
-  printf("\nmaking...\n%i \n%s \n%i \n\n", sockfd, addrIp, *ttl);
-  createHeaderToSend(pnr);
-  (*pnr)++;
+void makeAndSendPacket(struct PackageData* pd)
+{
+  printf("\nmaking packet...\nsock %i \nip %s \nttl %i \n", sockfd, pd->addressIp, pd->ttl);
+  fillHeader(&pd->pnr);
+  pd->pnr++;
 
-  fillRecipientAddress(addrIp);
+  fillRecipientAddress(pd->addressIp);
 
-  setTTL(ttl);
-  (*ttl)++;
+  setTTL(&pd->ttl);
   
   sendPacket();
+}
+
+void sendPackets(uint n, struct PackageData *pd){
+  printf("\n\nmaking a few packets...\nsock %i \nip %s \nttl %i \n",
+	 sockfd, pd->addressIp, pd->ttl);
+  while(n--)
+    makeAndSendPacket(pd);
+
+  pd->ttl++;
+
 }

@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <netinet/ip_icmp.h>
 
+//try to make it extern
 static struct sockaddr_in recipient;
 static struct icmphdr icmp_header;
 
@@ -19,12 +20,11 @@ extern int sockfd;
 
 struct PackageData {
   char *addressIp;
-  int ttl = 0;
+  int ttl = 1;
   int pnr = 0;
   const pid_t pid = getpid();
 }static packageData;
 
-void makeSendPacket(int *pnr = &packageData.pnr,
-		    const char *addrIp = packageData.addressIp,
-		    int *ttl = &packageData.ttl);
+//void makeAndSendPacket(struct PackageData*pd = &packageData);
+void sendPackets(uint n=1, struct PackageData *pd = &packageData);
 
