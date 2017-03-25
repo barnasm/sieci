@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include <stdio.h>
@@ -20,8 +21,8 @@ extern int sockfd;
 
 struct PackageData {
   char *addressIp;
-  int ttl = 1;
-  int pnr = 0;
+  int ttl = 100;
+  int pnr = 10;
   const pid_t pid = getpid();
 }static packageData;
 

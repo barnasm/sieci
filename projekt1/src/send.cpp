@@ -14,18 +14,17 @@ u_int16_t compute_icmp_checksum (const void *buff, int length){
   return (u_int16_t)(~(sum + (sum >> 16)));
 }
 
-
 //struct icmphdr icmp_header;
-void fillHeader(const int *nth){
+void fillHeader(const int nth){
   icmp_header.type = ICMP_ECHO;
   icmp_header.code = 0;
   icmp_header.un.echo.id = packageData.pid;
-  icmp_header.un.echo.sequence = *nth;
+  icmp_header.un.echo.sequence = nth;
+  icmp_header.checksum = 0;	  
   icmp_header.checksum =
     compute_icmp_checksum((u_int16_t*)&icmp_header, sizeof(icmp_header));
 }
 
-//struct sockaddr_in recipient;
 void fillRecipientAddress(const char *address_ip){
   bzero (&recipient, sizeof(recipient));
   recipient.sin_family = AF_INET;				   
@@ -44,8 +43,9 @@ void sendPacket(){
 
 void makeAndSendPacket(struct PackageData* pd)
 {
-  printf("\nmaking packet...\nsock %i \nip %s \nttl %i \n", sockfd, pd->addressIp, pd->ttl);
-  fillHeader(&pd->pnr);
+  printf("\nmaking packet...\nid %i \nip %s \nttl %i \n", pd->pnr, pd->addressIp, pd->ttl);
+
+  fillHeader(pd->pnr);
   pd->pnr++;
 
   fillRecipientAddress(pd->addressIp);
@@ -62,5 +62,4 @@ void sendPackets(uint n, struct PackageData *pd){
     makeAndSendPacket(pd);
 
   pd->ttl++;
-
 }

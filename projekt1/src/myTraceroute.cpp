@@ -28,7 +28,7 @@ int main(int argc, char** args){
 
   packageData.addressIp = args[1];
   sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-  //printf("%s\n %i\n %i\n", packageData.addressIp, sockfd, packageData.pid);
+  printf("%s\n %i\n %i\n", packageData.addressIp, sockfd, packageData.pid);
   
   if (sockfd < 0) {
     fprintf(stderr, "socket error: %s\n", strerror(errno)); 
@@ -50,10 +50,12 @@ int main(int argc, char** args){
       fprintf(stderr, "Time out\n");
       return EXIT_FAILURE; //obsluga tego pozniej!
     }
-    std::chrono::high_resolution_clock::time_point receiveTime = std::chrono::high_resolution_clock::now();
-    std::cout << "received in " << 
-      std::chrono::duration_cast<std::chrono::milliseconds>
-      (receiveTime-sendTime).count() << "ms" << std::endl;
+    std::chrono::high_resolution_clock::time_point receiveTime =
+      std::chrono::high_resolution_clock::now();
+
+    //std::cout << "received in " << //do wywalnia
+    //std::chrono::duration_cast<std::chrono::milliseconds>
+    //(receiveTime-sendTime).count() << "ms" << std::endl;
 
     //odczytaj czy to jest moj pakiet
     //jesli to nie bym moj pakiet czekaj na nastepny odpowiednio mniej czasu
@@ -83,7 +85,18 @@ int main(int argc, char** args){
     printf ("%s %ims\n", sender_ip_str, dur/NoPackets);
     
     struct iphdr* ip_header = (struct iphdr*) buffer;
+    
+    u_int8_t* icmp_packet = buffer + 4 * ip_header->ihl;
+    struct icmphdr* icmp_header = (struct icmphdr*)icmp_packet;
+            
     ssize_t ip_header_len = 4 * ip_header->ihl;
+
+    if(icmp_header->type == ICMP_TIME_EXCEEDED){//our header is in data of received packe
+      ip_header   = (struct iphdr*)   (icmp_packet + 8); //getting sent ip header
+      icmp_header = (struct icmphdr *)(icmp_packet + 8 + ip_header->ihl * 4); //getting sent icmp header
+    }
+    printf("ICMP: %d  %d\n", icmp_header->un.echo.id, icmp_header->un.echo.sequence);
+
     
     printf ("IP header: "); 
     print_as_bytes (buffer, ip_header_len);
