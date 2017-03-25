@@ -1,6 +1,8 @@
 #include "send.h"
 #include "receive.h"
 #include <iostream>
+#include <string>
+#include <regex>
 
 void print_as_bytes (unsigned char*, ssize_t);
 std::chrono::high_resolution_clock::time_point sendTime;
@@ -23,9 +25,32 @@ bool isItMyPacket(){
   return true;
 }
 
+bool isValidAddr(std::string addr){
+  std::regex e("(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})");
+  std::smatch m;
+
+  //if(!std::regex_match(addr, e))
+  //return false;
+
+  if(!std::regex_search (addr,m,e))
+    return false;
+    
+  for (int i = 1; i < m.size(); i++)
+    if((m[i] > "255" and m[i].length() > 2)or(m[i].str().at(0) == '0' and m[i].length() > 1)){
+      return false;
+    }
+
+  return true;
+}
+
 int sockfd;
 int main(int argc, char** args){
 
+  if(!isValidAddr(args[1])){
+    printf("Wrong IP address.\n");
+    return EXIT_FAILURE;
+  }
+  
   packageData.addressIp = args[1];
   sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
   printf("%s\n %i\n %i\n", packageData.addressIp, sockfd, packageData.pid);
