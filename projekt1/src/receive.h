@@ -1,17 +1,13 @@
 #pragma once
 
-#include <stdio.h>
-#include <arpa/inet.h>
-#include <netinet/ip.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <chrono>
-#include <assert.h>
-#include <netinet/ip_icmp.h>
+#include "myTraceroute.h"
 
+static struct sockaddr_in sender;	
+static socklen_t sender_len = sizeof(sender);
+static char sender_ip_str[NoPackets][20];
 
-struct sockaddr_in sender;	
-socklen_t sender_len = sizeof(sender);
-u_int8_t buffer[IP_MAXPACKET];
+extern u_int8_t buffer[IP_MAXPACKET];
+extern struct PackageData packageData;
+
+int notBlockWait(std::chrono::high_resolution_clock::time_point&);
+bool isItMyPacket();

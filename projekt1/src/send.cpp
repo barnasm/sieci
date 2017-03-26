@@ -14,7 +14,9 @@ u_int16_t compute_icmp_checksum (const void *buff, int length){
   return (u_int16_t)(~(sum + (sum >> 16)));
 }
 
-//struct icmphdr icmp_header;
+struct sockaddr_in recipient;
+struct icmphdr icmp_header;
+
 void fillHeader(const int nth){
   icmp_header.type = ICMP_ECHO;
   icmp_header.code = 0;
@@ -36,14 +38,14 @@ void setTTL(const void *ttl){
 }
 
 void sendPacket(){
-  ssize_t bytes_sent = sendto
-    (sockfd, &icmp_header, sizeof(icmp_header), 0,
-     (struct sockaddr*)&recipient, sizeof(recipient));
+  //  ssize_t bytes_sent =
+  sendto(sockfd, &icmp_header, sizeof(icmp_header), 0,
+	 (struct sockaddr*)&recipient, sizeof(recipient));
 }
 
 void makeAndSendPacket(struct PackageData* pd)
 {
-  printf("\nmaking packet...\nid %i \nip %s \nttl %i \n", pd->pnr, pd->addressIp, pd->ttl);
+  //printf("\nmaking packet...\nid %i \nip %s \nttl %i \n", pd->pnr, pd->addressIp, pd->ttl);
 
   fillHeader(pd->pnr);
   pd->pnr++;
@@ -51,15 +53,16 @@ void makeAndSendPacket(struct PackageData* pd)
   fillRecipientAddress(pd->addressIp);
 
   setTTL(&pd->ttl);
-  
+
+  //if(pd->pnr%9 != 0) //it just test for print "???"
   sendPacket();
 }
 
 void sendPackets(uint n, struct PackageData *pd){
-  printf("\n\nmaking a few packets...\nsock %i \nip %s \nttl %i \n",
-	 sockfd, pd->addressIp, pd->ttl);
+  pd->ttl++;
+
+  //printf("\n\nmaking a few packets...\nsock %i \nip %s \nttl %i \n",
+  //	 sockfd, pd->addressIp, pd->ttl);
   while(n--)
     makeAndSendPacket(pd);
-
-  pd->ttl++;
 }
