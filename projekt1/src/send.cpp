@@ -1,6 +1,8 @@
 //Michał Barnaś 280012
 
 #include "send.h"
+struct sockaddr_in recipient;
+struct icmphdr icmp_header;
 
 u_int16_t compute_icmp_checksum (const void *buff, int length){
   u_int32_t sum;
@@ -13,9 +15,6 @@ u_int16_t compute_icmp_checksum (const void *buff, int length){
   sum = (sum >> 16) + (sum & 0xffff);
   return (u_int16_t)(~(sum + (sum >> 16)));
 }
-
-struct sockaddr_in recipient;
-struct icmphdr icmp_header;
 
 void fillHeader(const int nth){
   icmp_header.type = ICMP_ECHO;

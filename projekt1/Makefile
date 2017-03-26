@@ -1,5 +1,5 @@
 CC = g++
-CPPFLAGS += -std=c++11 -Wall -w -Werror -Wreturn-type -pedantic -pedantic-errors
+CPPFLAGS += -std=c++11 -Wall -W -Werror -Wreturn-type -pedantic -pedantic-errors
 
 EXE := MyTraceroute
 

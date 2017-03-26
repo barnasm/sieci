@@ -1,6 +1,6 @@
- #include "receive.h"
+#include "receive.h"
 
-int notBlockWait(std::chrono::high_resolution_clock::time_point& sendTime){
+int notBlockWait(){
   int sec = 1;
   std::chrono::microseconds mc = //one second or less
     std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::seconds(sec)) -
@@ -12,19 +12,13 @@ int notBlockWait(std::chrono::high_resolution_clock::time_point& sendTime){
   return select (sockfd+2, &descriptors, NULL, NULL, &tv);
 }
 
-void print_as_bytes (unsigned char* buff, ssize_t length)
-{
-  for (ssize_t i = 0; i < length; i++, buff++)
-    printf ("%.2x ", *buff);	
-}
-
-bool isItMyPacket(){
+bool isMyPacket(){
   struct iphdr* ip_header = (struct iphdr*) buffer;
     
   u_int8_t* icmp_packet = buffer + 4 * ip_header->ihl;
   struct icmphdr* icmp_header = (struct icmphdr*)icmp_packet;
   
-  if(icmp_header->type == ICMP_TIME_EXCEEDED){//our header is in data of received packe
+  if(icmp_header->type == ICMP_TIME_EXCEEDED){//our header is in data of received packed
     ip_header   = (struct iphdr*)   (icmp_packet + 8); //getting sent ip header
     icmp_header = (struct icmphdr *)(icmp_packet + 8 + ip_header->ihl * 4); //getting sent icmp header
   }
@@ -39,13 +33,41 @@ bool isItMyPacket(){
     return false;
   }
   return true;
+}
 
-  //ssize_t ip_header_len = 4 * ip_header->ihl;
-  // printf ("IP header: "); 
-  // print_as_bytes (buffer, ip_header_len);
-  // printf("\n");
-  
-  // printf ("IP data:   ");
-  // print_as_bytes (buffer + ip_header_len, packet_len - ip_header_len);
-  // printf("\n\n");
+int tryToGetAllPackets(std::chrono::milliseconds &dur){
+  int count = 0;
+  while(count < NoPackets){
+    int ready = notBlockWait();
+    if(ready < 0) {
+      fprintf(stderr, "recvfrom error: %s\n", strerror(errno));
+      return EXIT_FAILURE;
+    }else if(ready == 0){
+      //fprintf(stderr, "Time out\n");
+      break;
+    }
+    std::chrono::high_resolution_clock::time_point receiveTime =
+      std::chrono::high_resolution_clock::now();
+
+    struct sockaddr_in sender;	
+    socklen_t sender_len = sizeof(sender);
+
+    ssize_t packet_len =
+      recvfrom (sockfd, buffer, IP_MAXPACKET, MSG_DONTWAIT,
+		(struct sockaddr*)&sender, &sender_len);
+    
+    if (packet_len < -1) {
+      fprintf(stderr, "recvfrom error: %s\n", strerror(errno)); 
+      return EXIT_FAILURE;
+    }
+    
+    if(not isMyPacket())
+      continue;
+      
+    dur += std::chrono::duration_cast<std::chrono::milliseconds>(receiveTime-sendTime);
+    inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str[count], sizeof(sender_ip_str[count]));
+    
+    count++;
+  }
+  return count;
 }
