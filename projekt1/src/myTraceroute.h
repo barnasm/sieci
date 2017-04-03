@@ -1,3 +1,8 @@
+//Michał Barnaś 280012
+//http://www.networksorcery.com/enp/protocol/icmp.htm#Data
+//http://www.networksorcery.com/enp/protocol/ip.htm#Padding
+//https://www.frozentux.net/iptables-tutorial/chunkyhtml/x281.html
+
 #pragma once
 
 #include <stdio.h>

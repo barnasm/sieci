@@ -1,5 +1,4 @@
 //Michał Barnaś 280012
-
 #include "send.h"
 struct sockaddr_in recipient;
 struct icmphdr icmp_header;

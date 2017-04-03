@@ -1,3 +1,4 @@
+//Michał Barnaś 280012
 #include "receive.h"
 
 int notBlockWait(){
