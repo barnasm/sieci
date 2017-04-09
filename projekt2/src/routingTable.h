@@ -12,8 +12,11 @@ public:
   RoutingTable(uint32_t interfaces): interfaces(interfaces), sender(){};
 
   void sendTable(){
-    for(const auto& c: connections)
-      sender.send(c);
+    for(const auto& c: connections){
+      auto message = sender.createMessage(c);
+      for(uint i = 0; i < interfaces; ++i)
+	sender.send(connections[i].address.broadcast_addr, message);
+    }
   }
   
   friend std::istream& operator>>(std::istream &is, RoutingTable &rt){
@@ -28,7 +31,7 @@ public:
   friend std::ostream& operator<<(std::ostream &os, RoutingTable &rt){
     os << std::string(50, '#') << '\n';
     for(const auto &c: rt.connections){
-      os << std::setw(20) << std::right << c.address;
+      os << std::setw(16) << std::right << c.address;
 
       if(c.distance < rt.INF) os << " distance " << c.distance;
       else                    os << " unreachable ";
