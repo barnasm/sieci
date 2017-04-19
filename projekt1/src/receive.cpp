@@ -41,7 +41,7 @@ int tryToGetAllPackets(std::chrono::milliseconds &dur){
   while(count < NoPackets){
     int ready = notBlockWait();
     if(ready < 0) {
-      fprintf(stderr, "recvfrom error: %s\n", strerror(errno));
+      fprintf(stderr, "select error: %s\n", strerror(errno));
       return EXIT_FAILURE;
     }else if(ready == 0){
       //fprintf(stderr, "Time out\n");
