@@ -18,7 +18,6 @@ std::istream& operator>>(std::istream &is, struct IpAddressCIDR &cidr){
   
   cidr.mask = inet_net_pton(AF_INET, my_addr_str.c_str(), &my_addr, -1);
   inet_net_ntop(AF_INET, &my_addr, cidr.mask, cidr.addr_str, INET_ADDRSTRLEN);
-  
   inet_net_pton(AF_INET, cidr.addr_str, &cidr.addr, -1);
   inet_ntop(AF_INET, &cidr.addr, cidr.addr_str, INET_ADDRSTRLEN);
   cidr.createBroadcastAddr();

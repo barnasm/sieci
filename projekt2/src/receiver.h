@@ -1,5 +1,5 @@
 #pragma once
-
+ 
 #include <chrono>
 #include <stdexcept>
 #include <netinet/ip.h>
@@ -58,12 +58,12 @@ public:
     //printf("mask: %u\n", buffer[4]);
     uint32_t *dis = (uint32_t*)&buffer[5];
     //printf("distance: %u\n", ntohl(*dis));
-
     //std::cout << std::flush;
     fflush(stdout);
     
     Connection con;
     strcpy(con.address.addr_str, addr_str);
+    inet_pton(AF_INET, addr_str, &con.address.addr);
     con.address.mask = buffer[4];
     inet_net_pton(AF_INET, addr_str, &con.address.addr, -1);
     con.distance = ntohl(*dis);
@@ -82,7 +82,7 @@ public:
     FD_SET (sockfd, &descriptors);
     struct timeval tv; tv.tv_sec = 0; tv.tv_usec = time.count();
 
-    int ready = select (sockfd+2, &descriptors, NULL, NULL, &tv);
+    int ready = select (sockfd+1, &descriptors, NULL, NULL, &tv);
     if(ready < 0) {
       std::cerr << "select error: " << strerror(errno) << std::endl;
       throw;
@@ -98,14 +98,9 @@ public:
       std::cerr << "recvfrom error: " << strerror(errno) << std::endl;
       throw;
     }
-    
-    // char sender_ip_str[20]; 
-    // inet_ntop(AF_INET, &(sender.sin_addr), sender_ip_str, sizeof(sender_ip_str));
-    // printf ("Received UDP packet from IP address: %s, port: %d\n", sender_ip_str, ntohs(sender.sin_port));
-    
-    return readReceivedData(sender, buffer, datagram_len);
     //sendCinfirmation(sender, sender_len);
-    
+
+    return readReceivedData(sender, buffer, datagram_len);
   }
 
   ~Receiver(){

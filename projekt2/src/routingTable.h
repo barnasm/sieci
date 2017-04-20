@@ -14,7 +14,6 @@ class RoutingTable{
   Receiver receiver;
 public:
   RoutingTable(uint32_t interfaces):
-    //interfaces(interfaces),
     sender(),
     receiver(){}
 
@@ -26,19 +25,29 @@ public:
     }
   }
 
-  inline bool isBetter(Connection &conOld, Connection &conNew){
-    return conOld.distance > conNew.distance + conNew.via_ptr->distance;
-  }
-  
   void relaxConnection(Connection &con){
+    con.distance += con.via_ptr->distance;
     for(auto& c: connections)
-      if(strcmp(c.address.addr_str, con.address.addr_str) == 0 and c.address.mask == con.address.mask){
-	if(isBetter(c, con))
+      //if(strcmp(c.address.addr_str, con.address.addr_str) == 0 and c.address.mask == con.address.mask){
+      if(c.address.addr.s_addr == con.address.addr.s_addr){
+	if(c.distance > con.distance)
 	  c = std::move(con);
 	return;
       }
 
     connections.push_back(con);
+  }
+  
+  bool isAddressInRange(Connection &net, Connection &con){
+    in_addr addr;
+    char c[INET_ADDRSTRLEN];
+    
+    inet_pton(AF_INET, con.via_str.c_str(), &addr);
+    inet_net_ntop(AF_INET, &addr, net.address.mask, c, INET_ADDRSTRLEN);
+    bzero(&addr, sizeof(addr));
+    inet_net_pton(AF_INET, c, &addr, -1);
+    // inet_ntop(AF_INET, &addr, c, INET_ADDRSTRLEN);
+    return addr.s_addr == net.address.addr.s_addr;
   }
   
   void receiveData(std::chrono::seconds dur = std::chrono::seconds(5))try{
@@ -52,11 +61,16 @@ public:
 	// 	  << " distance " << con.distance << std::endl
 	// 	  <<  " via " << con.via_str << std::endl;
 	// std::cout << &con << std::endl << std::endl;
-	con.via_ptr = &interfaces[0];
-	relaxConnection(con);
+
+	for(auto &i: interfaces){//check if packet comes from particular network
+	  if(isAddressInRange(i, con)){
+	    con.via_ptr = &i;
+	    relaxConnection(con);
+	  }
+	}
       } 
   }
-  catch(std::exception &e){//...){
+  catch(std::exception &e){//(...){
     //std::cout << "error occured: " << e.what() << std::endl; 
   }
   

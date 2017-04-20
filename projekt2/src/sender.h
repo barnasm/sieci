@@ -14,7 +14,7 @@ struct IpAddressCIDR{
   //std::string my_addr_str;
   char addr_str[INET_ADDRSTRLEN];
   struct in_addr addr{0}; //network address in network order
-  struct in_addr broadcast_addr{0}; //broadcast address in network order
+  struct in_addr broadcast_addr{0}; //broadcast address in network order(needed only for interfaces)
   uint8_t mask{0};
 
   void createBroadcastAddr();
