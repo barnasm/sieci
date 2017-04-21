@@ -1,4 +1,4 @@
-CC = g++
+CC = clang++#g++
 CPPFLAGS += -std=c++11 -lresolv #-Wall -Wextra -W -Werror -Wreturn-type -pedantic -pedantic-errors
 
 EXE := router

@@ -12,12 +12,12 @@ void IpAddressCIDR::createBroadcastAddr(){
 
 std::istream& operator>>(std::istream &is, struct IpAddressCIDR &cidr){
   std::string my_addr_str;
-  struct in_addr my_addr;
+  //struct in_addr my_addr;
   
   is >> my_addr_str;
   
-  cidr.mask = inet_net_pton(AF_INET, my_addr_str.c_str(), &my_addr, -1);
-  inet_net_ntop(AF_INET, &my_addr, cidr.mask, cidr.addr_str, INET_ADDRSTRLEN);
+  cidr.mask = inet_net_pton(AF_INET, my_addr_str.c_str(), &cidr.my_addr, -1);
+  inet_net_ntop(AF_INET, &cidr.my_addr, cidr.mask, cidr.addr_str, INET_ADDRSTRLEN);
   inet_net_pton(AF_INET, cidr.addr_str, &cidr.addr, -1);
   inet_ntop(AF_INET, &cidr.addr, cidr.addr_str, INET_ADDRSTRLEN);
   cidr.createBroadcastAddr();
@@ -26,7 +26,7 @@ std::istream& operator>>(std::istream &is, struct IpAddressCIDR &cidr){
 }
 
 std::ostream& operator<<(std::ostream &os, const struct IpAddressCIDR &cidr) {
-   return os << cidr.addr_str << " /" << std::setw(2) << std::left << (uint)cidr.mask;
+   return os << cidr.addr_str << " /" << std::setw(3) << std::left << (uint)cidr.mask;
 }
 
 

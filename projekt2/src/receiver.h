@@ -65,9 +65,10 @@ public:
     strcpy(con.address.addr_str, addr_str);
     inet_pton(AF_INET, addr_str, &con.address.addr);
     con.address.mask = buffer[4];
-    inet_net_pton(AF_INET, addr_str, &con.address.addr, -1);
+    //inet_net_pton(AF_INET, addr_str, &con.address.addr, -1);
     con.distance = ntohl(*dis);
     con.via_str = sender_ip_str;
+    inet_pton(AF_INET, con.via_str.c_str(), &con.address.my_addr);
     //std::cout << &con << std::endl;
     return con;
   }
@@ -87,11 +88,11 @@ public:
       std::cerr << "select error: " << strerror(errno) << std::endl;
       throw;
     }else if(ready == 0){
-      //fprintf(stderr, "Time out\n");
+      //std::cerr << "Time out " << strerror(errno) << std::endl;
       //return Connection();
       throw std::runtime_error("Time out");
     }
-
+    
     ssize_t datagram_len = recvfrom (sockfd, buffer, IP_MAXPACKET, MSG_DONTWAIT,
     				     (struct sockaddr*)&sender, &sender_len);
     if (datagram_len < -1){
