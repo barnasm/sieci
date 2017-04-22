@@ -35,7 +35,8 @@ typedef struct Connection{
   unsigned lastReceivedRound = 0;
 
   bool isReachable(unsigned round){
-    if(round - via_ptr->lastReceivedRound > MAX_ATTEMPT){
+    if(!via_str.empty() and round - via_ptr->lastReceivedRound > MAX_ATTEMPT){
+      //via_ptr->distance = INF+1;
       distance = INF+1;
       return false;
      }

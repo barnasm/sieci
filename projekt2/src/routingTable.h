@@ -13,11 +13,20 @@ class RoutingTable{
   unsigned round = 0;
 
   void relaxConnection(Connection &con){
+    for(auto& i: interfaces)
+      if(i.address.addr.s_addr == con.address.addr.s_addr)
+	if(i.distance < con.distance){
+	  //i.lastReceivedRound = con.lastReceivedRound;
+	  con = i;
+	  break;
+	}
+    
     for(auto& c: connections){
       //if(strcmp(c.address.addr_str, con.address.addr_str) == 0 and c.address.mask == con.address.mask){
       if(c.address.addr.s_addr == con.address.addr.s_addr){
 	if(c.distance > con.distance)
 	  c = con;
+	
 	//std::cout << c.via_ptr->distance << std::endl;
 	return;
       }
@@ -25,14 +34,15 @@ class RoutingTable{
     connections.push_back(std::move(con));
   }
   
-  bool isAddressInRange(Connection &net, Connection &con){
-    in_addr addr;
+  bool viaInterface(Connection &net, Connection &con){
+    in_addr addr{0};
     char c[INET_ADDRSTRLEN];
     
     inet_net_ntop(AF_INET, &con.address.my_addr, net.address.mask, c, INET_ADDRSTRLEN);
-    bzero(&addr, sizeof(addr));
+    //bzero(&addr, sizeof(addr));
     inet_net_pton(AF_INET, c, &addr, -1);
 
+    //interface address belongs to the same network which package comes from
     return addr.s_addr == net.address.addr.s_addr;
   }
 
@@ -66,22 +76,23 @@ public:
 	// 	  << " distance " << con.distance << std::endl
 	// 	  <<  " via " << con.via_str << std::endl;
 	// std::cout << &con << std::endl << std::endl;
-	for(auto &i: interfaces)//check if packet comes from particular network
-	  if(isAddressInRange(i, con)){
-	    if(i.address.my_addr.s_addr != con.address.my_addr.s_addr){
-	      con.via_ptr = &i;
-	      i.lastReceivedRound = round;
-	      con.lastReceivedRound = round;
-	    }
+	for(auto &i: interfaces){//check if packet comes from particular network
+	  if(i.address.my_addr.s_addr == con.address.my_addr.s_addr)
+	    break;
+	  if(viaInterface(i, con)){
+	    con.via_ptr = &i;
+	    i.lastReceivedRound = round;
+	    con.lastReceivedRound = round;
+	    	    
 	    con.distance += i.distance;
-	    if(i.address.addr.s_addr == con.address.addr.s_addr){
-	      relaxConnection(i);
-	    }
-	    else
+	    // if(i.address.addr.s_addr == con.address.addr.s_addr){
+	    //   relaxConnection(i);
+	    // }
+	    // else
 	      relaxConnection(con);
 	    break;
 	  }
-	
+	}
       }
   }
   catch(std::exception &e){//(...){
