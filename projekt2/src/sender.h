@@ -25,7 +25,7 @@ struct IpAddressCIDR{
 };
 
 typedef struct Connection{
-  const static uint8_t INF = 64;
+  const static uint8_t INF = 32;
   const static unsigned MAX_ATTEMPT = 1;
   
   struct IpAddressCIDR address;
@@ -36,10 +36,11 @@ typedef struct Connection{
 
   bool isReachable(unsigned round){
     if(!via_str.empty() and round - via_ptr->lastReceivedRound > MAX_ATTEMPT){
-      //via_ptr->distance = INF+1;
       distance = INF+1;
       return false;
      }
+    if(distance >= INF)
+      return false; 
     return true;
   }
 }Connection;

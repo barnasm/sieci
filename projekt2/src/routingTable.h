@@ -15,16 +15,17 @@ class RoutingTable{
   void relaxConnection(Connection &con){
     for(auto& i: interfaces)
       if(i.address.addr.s_addr == con.address.addr.s_addr)
-	if(i.distance < con.distance){
-	  //i.lastReceivedRound = con.lastReceivedRound;
-	  con = i;
-	  break;
-	}
+    	if(i.distance < con.distance){
+    	  //i.lastReceivedRound = con.lastReceivedRound;
+    	  con = i;
+    	  break;
+    	}
     
     for(auto& c: connections){
       //if(strcmp(c.address.addr_str, con.address.addr_str) == 0 and c.address.mask == con.address.mask){
       if(c.address.addr.s_addr == con.address.addr.s_addr){
-	if(c.distance > con.distance)
+	if(c.distance > con.distance or
+	   c.via_str == con.via_str)
 	  c = con;
 	
 	//std::cout << c.via_ptr->distance << std::endl;
@@ -70,8 +71,8 @@ public:
 	time = std::chrono::steady_clock::now() - timeStart)
       {
 	Connection con(receiver.receive(std::chrono::duration_cast<std::chrono::microseconds>(dur-time)));
-	if(con.via_str.empty())
-	  break;
+	//if(con.via_str.empty())
+	//break;
 	// std::cout << con.address << std::endl
 	// 	  << " distance " << con.distance << std::endl
 	// 	  <<  " via " << con.via_str << std::endl;
