@@ -33,15 +33,23 @@ typedef struct Connection{
   std::string via_str;
   Connection *via_ptr; //point to interface
   unsigned lastReceivedRound = 0;
-
+  bool reachable = true;
+  
   bool isReachable(unsigned round){
+    if(distance >= INF){
+      distance+=5;
+      return false;
+    }
     if(!via_str.empty() and round - via_ptr->lastReceivedRound > MAX_ATTEMPT){
       distance = INF+1;
       return false;
-     }
-    if(distance >= INF)
-      return false; 
-    return true;
+    }
+    //if(round - lastReceivedRound > MAX_ATTEMPT){
+    //   //distance = INF+1;
+    //   return false;
+    //}
+         
+    return reachable;
   }
 }Connection;
 

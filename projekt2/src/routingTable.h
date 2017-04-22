@@ -15,7 +15,7 @@ class RoutingTable{
   void relaxConnection(Connection &con){
     for(auto& i: interfaces)
       if(i.address.addr.s_addr == con.address.addr.s_addr)
-    	if(i.distance < con.distance){
+    	if(i.distance < con.distance and i.reachable){
     	  //i.lastReceivedRound = con.lastReceivedRound;
     	  con = i;
     	  break;
@@ -25,7 +25,8 @@ class RoutingTable{
       //if(strcmp(c.address.addr_str, con.address.addr_str) == 0 and c.address.mask == con.address.mask){
       if(c.address.addr.s_addr == con.address.addr.s_addr){
 	if(c.distance > con.distance or
-	   c.via_str == con.via_str)
+	   c.via_str == con.via_str or
+	   !c.via_ptr->reachable)
 	  c = con;
 	
 	//std::cout << c.via_ptr->distance << std::endl;
@@ -56,10 +57,22 @@ public:
   }
 
   void sendTable(){
-    for(const auto& c: connections){
+    for(auto& c: connections){
       auto message = sender.createMessage(c);
-      for(auto& i: interfaces)
-	sender.send(i.address.broadcast_addr, message);
+      for(auto& i: interfaces){
+	try{
+	  sender.send(i.address.broadcast_addr, message);
+	  i.reachable = true;
+	}
+	catch(...){
+	  i.reachable = false;
+	}
+      }
+      if(c.distance > Connection::INF*2){
+	//std::cout << "\n*** should be deleted ***\n";
+	c = connections.back();
+	connections.pop_back();
+      }
     }
   }
   
@@ -90,7 +103,7 @@ public:
 	    //   relaxConnection(i);
 	    // }
 	    // else
-	      relaxConnection(con);
+	    relaxConnection(con);
 	    break;
 	  }
 	}

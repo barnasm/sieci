@@ -26,7 +26,7 @@ std::istream& operator>>(std::istream &is, struct IpAddressCIDR &cidr){
 }
 
 std::ostream& operator<<(std::ostream &os, const struct IpAddressCIDR &cidr) {
-   return os << cidr.addr_str << " /" << std::setw(3) << std::left << (uint)cidr.mask;
+   return os << cidr.addr_str << "/" << std::setw(3) << std::left << (uint)cidr.mask;
 }
 
 
@@ -68,7 +68,7 @@ void Sender::send(const struct in_addr addr, const std::string& message){
   if (sendto(sockfd, message.c_str(), message_len, 0, (struct sockaddr*) &server_address,
 	     sizeof(server_address)) != message_len)
     {
-      std::cerr << "sender sendto error: " << strerror(errno);
-      throw;
+      //std::cerr << "sender sendto error: " << strerror(errno);
+      throw("Unreachable");
     }    
 }
