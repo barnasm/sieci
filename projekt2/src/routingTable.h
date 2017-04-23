@@ -14,17 +14,15 @@ class RoutingTable{
 
   void relaxConnection(Connection &con){
     for(auto& c: connections){
-      //if(strcmp(c.address.addr_str, con.address.addr_str) == 0 and c.address.mask == con.address.mask){
       if(c.address.addr.s_addr == con.address.addr.s_addr){
 	if(c.distance > con.distance or
 	   c.via_str == con.via_str or
 	   !c.via_ptr->reachable)
 	  c = con;
 
-	for(const auto& i: interfaces)
+	for(const auto& i: interfaces)//how to get rid of this loop?
 	  if(i.address.addr.s_addr == c.address.addr.s_addr)
 	    if(i.distance < c.distance and i.reachable){
-	      //i.lastReceivedRound = con.lastReceivedRound;
 	      c = i;
 	      break;
 	    }
@@ -40,10 +38,8 @@ class RoutingTable{
     char c[INET_ADDRSTRLEN];
     
     inet_net_ntop(AF_INET, &con.address.my_addr, net.address.mask, c, INET_ADDRSTRLEN);
-    //bzero(&addr, sizeof(addr));
     inet_net_pton(AF_INET, c, &addr, -1);
 
-    //interface address belongs to the same network which package comes from
     return addr.s_addr == net.address.addr.s_addr;
   }
 
@@ -72,7 +68,6 @@ public:
 	for(const auto& in: interfaces){
 	  if(connections[c].address.addr.s_addr == in.address.addr.s_addr){
 	    connections[c] = in;
-	    //connections[c].distance
 	    fl = false;
 	    break;
 	  }
@@ -94,13 +89,7 @@ public:
 	time = std::chrono::steady_clock::now() - timeStart)
       {
 	Connection con(receiver.receive(std::chrono::duration_cast<std::chrono::microseconds>(dur-time)));
-	//if(con.via_str.empty())
-	//break;
-	// std::cout << con.address << std::endl
-	// 	  << " distance " << con.distance << std::endl
-	// 	  <<  " via " << con.via_str << std::endl;
-	// std::cout << &con << std::endl << std::endl;
-	for(const auto &i: interfaces){//check if packet comes from particular network
+	for( auto &i: interfaces){//check if packet comes from particular network
 	  if(i.address.my_addr.s_addr == con.address.my_addr.s_addr)
 	    break;
 	  if(viaInterface(i, con)){
@@ -110,6 +99,7 @@ public:
 	    	    
 	    con.distance += i.distance;
 	    // if(i.address.addr.s_addr == con.address.addr.s_addr){
+	    //this should help get rid of mentioned loop
 	    //   relaxConnection(i);
 	    // }
 	    // else
@@ -121,8 +111,7 @@ public:
   }
   catch(std::exception &e){//(...){
     //only for catching time out exception 
-    //std::cout << "error occured: " << e.what() << std::endl;
-    return;
+    //return; //return shouldnt be necessary
   }
   
   friend std::istream& operator>>(std::istream &is, RoutingTable &rt){
@@ -142,7 +131,6 @@ public:
     os << std::string(50, '#') << '\n';
     for(auto &c: rt.connections){
       os << std::setw(16) << std::right << c.address;
-      //if(c.distance < UINT32_MAX) os << " distance " << c.distance;
       if(c.isReachable(rt.round)) os << " distance " << std::setw(3) << c.distance;
       else                os << " unreachable ";
 

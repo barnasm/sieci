@@ -2,7 +2,7 @@
 
 void IpAddressCIDR::createBroadcastAddr(){
   uint m = 0;
-  for(uint i = 0; i < 32-this->mask; ++i)
+  for(uint i = 0; i < (32u-this->mask); ++i)
     m |= 1<<i;
   
   m = htonl(m);
@@ -15,7 +15,7 @@ std::istream& operator>>(std::istream &is, struct IpAddressCIDR &cidr){
   //struct in_addr my_addr;
   
   is >> my_addr_str;
-  
+  //make sure that it couldnt be simpler
   cidr.mask = inet_net_pton(AF_INET, my_addr_str.c_str(), &cidr.my_addr, -1);
   inet_net_ntop(AF_INET, &cidr.my_addr, cidr.mask, cidr.addr_str, INET_ADDRSTRLEN);
   inet_net_pton(AF_INET, cidr.addr_str, &cidr.addr, -1);
@@ -48,16 +48,19 @@ Sender::Sender(){
 }
 
 std::string Sender::createMessage(const Connection &c){
+  auto tmp = htonl(c.distance);
+
+  // ***examin which wersion is faster***
   // std::string message;
   // message.append((char*)&c.address.addr, 4);
   // message.push_back(c.address.mask);
-  auto tmp = htonl(c.distance);
   // message.append((char*)&tmp, 4);
   
   std::string message(9,0);
   memcpy(&message[0], (char*)&c.address.addr, 4);
   message[4] = c.address.mask;
   memcpy(&message[5], (char*)&tmp, 4);
+
   return message;
 }
 

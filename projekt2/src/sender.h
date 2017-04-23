@@ -10,10 +10,9 @@
 #include <iomanip>
 #include <limits>
 
-struct IpAddressCIDR{
-  //std::string my_addr_str;
-  char addr_str[INET_ADDRSTRLEN];
-  struct in_addr my_addr{0};
+struct IpAddressCIDR{//dobrac lepsze nazwy do pol i wydzielic osobny plik dla tej struktury
+  char addr_str[INET_ADDRSTRLEN]; //network addr
+  struct in_addr my_addr{0}; //ip address in network order
   struct in_addr addr{0}; //network address in network order
   struct in_addr broadcast_addr{0}; //broadcast address in network order(needed only for interfaces)
   uint8_t mask{0};
@@ -24,7 +23,7 @@ struct IpAddressCIDR{
   friend std::ostream& operator<<(std::ostream &os, const struct IpAddressCIDR &cidr);
 };
 
-typedef struct Connection{
+typedef struct Connection{//rozbic to na interfejs i podklasy dla connection i interface
   const static uint8_t INF = 32;
   const static unsigned MAX_ATTEMPT = 1;
   
