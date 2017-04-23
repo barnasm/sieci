@@ -57,8 +57,8 @@ public:
   }
 
   void sendTable(){
-    for(auto& c: connections){
-      auto message = sender.createMessage(c);
+    for(size_t c=0; c < connections.size(); ++c){
+      auto message = sender.createMessage(connections[c]);
       for(auto& i: interfaces){
 	try{
 	  sender.send(i.address.broadcast_addr, message);
@@ -68,10 +68,11 @@ public:
 	  i.reachable = false;
 	}
       }
-      if(c.distance > Connection::INF*2){
+      if(connections[c].distance > Connection::INF*2 and !connections[c].via_str.empty()){
 	//std::cout << "\n*** should be deleted ***\n";
-	c = connections.back();
+	connections[c] = connections.back();
 	connections.pop_back();
+	c--;
       }
     }
   }

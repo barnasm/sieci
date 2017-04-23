@@ -44,12 +44,8 @@ typedef struct Connection{
       distance = INF+1;
       return false;
     }
-    //if(round - lastReceivedRound > MAX_ATTEMPT){
-    //   //distance = INF+1;
-    //   return false;
-    //}
-         
-    return reachable;
+             
+    return via_ptr->reachable;
   }
 }Connection;
 
