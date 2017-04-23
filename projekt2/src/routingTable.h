@@ -13,14 +13,6 @@ class RoutingTable{
   unsigned round = 0;
 
   void relaxConnection(Connection &con){
-    for(auto& i: interfaces)
-      if(i.address.addr.s_addr == con.address.addr.s_addr)
-    	if(i.distance < con.distance and i.reachable){
-    	  //i.lastReceivedRound = con.lastReceivedRound;
-    	  con = i;
-    	  break;
-    	}
-    
     for(auto& c: connections){
       //if(strcmp(c.address.addr_str, con.address.addr_str) == 0 and c.address.mask == con.address.mask){
       if(c.address.addr.s_addr == con.address.addr.s_addr){
@@ -28,15 +20,22 @@ class RoutingTable{
 	   c.via_str == con.via_str or
 	   !c.via_ptr->reachable)
 	  c = con;
-	
-	//std::cout << c.via_ptr->distance << std::endl;
+
+	for(const auto& i: interfaces)
+	  if(i.address.addr.s_addr == c.address.addr.s_addr)
+	    if(i.distance < c.distance and i.reachable){
+	      //i.lastReceivedRound = con.lastReceivedRound;
+	      c = i;
+	      break;
+	    }
 	return;
       }
     }
+    
     connections.push_back(std::move(con));
   }
   
-  bool viaInterface(Connection &net, Connection &con){
+  bool viaInterface(const Connection &net, Connection &con) const{
     in_addr addr{0};
     char c[INET_ADDRSTRLEN];
     
@@ -51,15 +50,15 @@ class RoutingTable{
 public:
   RoutingTable(uint32_t interfaces):
     sender(),
-    receiver()
-  {//in interfaces are const number of elements if you dont reserve memory for them their addresses will be changed and pointers(via) to elements will lost
+    receiver(){
+    //in interfaces are const number of elements if you dont reserve memory for them their addresses will be changed and pointers(via) to elements will lost
     this->interfaces.reserve(interfaces);
   }
 
   void sendTable(){
     for(size_t c=0; c < connections.size(); ++c){
       auto message = sender.createMessage(connections[c]);
-      for(auto& i: interfaces){
+      for(const auto& i: interfaces){
 	try{
 	  sender.send(i.address.broadcast_addr, message);
 	  i.reachable = true;
@@ -68,11 +67,21 @@ public:
 	  i.reachable = false;
 	}
       }
-      if(connections[c].distance > Connection::INF*2 and !connections[c].via_str.empty()){
-	//std::cout << "\n*** should be deleted ***\n";
-	connections[c] = connections.back();
-	connections.pop_back();
-	c--;
+      if(connections[c].distance > Connection::INF*2){
+	bool fl=true;	
+	for(const auto& in: interfaces){
+	  if(connections[c].address.addr.s_addr == in.address.addr.s_addr){
+	    connections[c] = in;
+	    //connections[c].distance
+	    fl = false;
+	    break;
+	  }
+	}
+	if(fl){
+	  connections[c] = connections.back();
+	  connections.pop_back();
+	  c--;
+	}
       }
     }
   }
@@ -91,7 +100,7 @@ public:
 	// 	  << " distance " << con.distance << std::endl
 	// 	  <<  " via " << con.via_str << std::endl;
 	// std::cout << &con << std::endl << std::endl;
-	for(auto &i: interfaces){//check if packet comes from particular network
+	for(const auto &i: interfaces){//check if packet comes from particular network
 	  if(i.address.my_addr.s_addr == con.address.my_addr.s_addr)
 	    break;
 	  if(viaInterface(i, con)){

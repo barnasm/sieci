@@ -31,12 +31,12 @@ typedef struct Connection{
   struct IpAddressCIDR address;
   uint32_t distance;
   std::string via_str;
-  Connection *via_ptr; //point to interface
-  unsigned lastReceivedRound = 0;
-  bool reachable = true;
+  const Connection *via_ptr; //point to interface
+  mutable unsigned lastReceivedRound = 0;
+  mutable bool reachable = true;
   
   bool isReachable(unsigned round){
-    if(distance >= INF){
+    if(!via_str.empty() and distance >= INF){
       distance+=5;
       return false;
     }
@@ -44,7 +44,10 @@ typedef struct Connection{
       distance = INF+1;
       return false;
     }
-             
+    if(!via_ptr->reachable){
+      distance = INF+1;
+    }
+    
     return via_ptr->reachable;
   }
 }Connection;
