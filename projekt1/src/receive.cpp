@@ -1,4 +1,3 @@
-//Michał Barnaś
 #include "receive.h"
 
 int notBlockWait(){
