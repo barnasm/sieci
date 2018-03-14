@@ -19,9 +19,9 @@ bool isMyPacket(){
   u_int8_t* icmp_packet = buffer + 4 * ip_header->ihl;
   struct icmphdr* icmp_header = (struct icmphdr*)icmp_packet;
   
-  if(icmp_header->type == ICMP_TIME_EXCEEDED){//our header is in data of received packed
-    ip_header   = (struct iphdr*)   (icmp_packet + 8); //getting sent ip header
-    icmp_header = (struct icmphdr *)(icmp_packet + 8 + ip_header->ihl * 4); //getting sent icmp header
+  if(icmp_header->type == ICMP_TIME_EXCEEDED){//our header is in data field of received packet
+    ip_header   = (struct iphdr*)   (icmp_packet + 8); //get sent ip header
+    icmp_header = (struct icmphdr *)(icmp_packet + 8 + ip_header->ihl * 4); //get sent icmp header
   }
   //printf("ICMP: %d  %d\n", icmp_header->un.echo.id, icmp_header->un.echo.sequence);
 
