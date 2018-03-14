@@ -30,7 +30,7 @@ bool isMyPacket(){
     return false;
   }
   if(icmp_header->un.echo.sequence/NoPackets != packageData.ttl-1){
-    //printf("nie aktualny pakiet\n");
+    //printf("nieaktualny pakiet\n");
     return false;
   }
   return true;
